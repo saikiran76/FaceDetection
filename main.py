@@ -41,3 +41,17 @@ def update_video():
         video_label.configure(image=imgtk)
 
     root.after(10, update_video)  # Update video feed every 10ms
+
+def record_name():
+    global face_count, data_file, success_label
+
+    # Get the name entered by the user
+    detected_name = name_entry.get()
+
+    if detected_name:
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        data_file.write(f"Name: {detected_name}, Face {face_count} detected at {timestamp}\n")
+        face_count += 1
+
+        # Display a success message
+        success_label.config(text="Name recorded successfully!")
