@@ -7,6 +7,7 @@ import os
 import time
 
 face_count = 0
+face_name = ""
 cap = None
 face_cascade = None
 video_label = None
@@ -29,6 +30,22 @@ def update_video():
 
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            # Adjust the cropping area to include more of the detected face
+            x -= int(w * 0.1)
+            y -= int(h * 0.1)
+            w = int(w * 1.2)
+            h = int(h * 1.2)
+
+            # Make sure the cropping area is within the frame boundaries
+            if x < 0:
+                x = 0
+            if y < 0:
+                y = 0
+            if x + w > frame.shape[1]:
+                w = frame.shape[1] - x
+            if y + h > frame.shape[0]:
+                h = frame.shape[0] - y
 
             # Cropping and saving the detected face
             detected_face = frame[y:y + h, x:x + w]
