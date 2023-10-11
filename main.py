@@ -59,8 +59,9 @@ def update_video():
 
     root.after(10, update_video)  # Update video feed every 10ms
 
+# Recording the data of the corresponding face
 def record_name():
-    global face_count, data_file, success_label
+    global face_count, data_file, success_label, face_name, capture_count
 
     # Get the name entered by the user
     detected_name = name_entry.get()
@@ -69,6 +70,65 @@ def record_name():
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         data_file.write(f"Name: {detected_name}, Face {face_count} detected at {timestamp}\n")
         face_count += 1
+        face_name = detected_name
 
-        # Display a success message
-        success_label.config(text="Name recorded successfully!")
+        # Capture and save five images of the user
+        capture_count = 0
+        while capture_count < 5:
+            time.sleep(1)  # Delay for stability
+            capture_count += 1
+            success_label.config(text=f"Captured {capture_count} images")
+            root.update()
+            if capture_count == 5:
+                success_label.config(text="Name recorded successfully!")
+
+
+
+# main window Interface Design
+
+root = tk.Tk()
+root.title("Face Detection")
+
+#Styling for the components of the GUI
+style = ttk.Style()
+style.configure("TButton", font=("Courier New", 12, "bold"), foreground="white", background="green",
+                padding=(10, 5))
+style.configure("TLabel", font=("Courier New", 12, "bold"))
+style.configure("TEntry", font=("Courier New", 12, "bold"))
+root.configure(background="light green")
+
+video_label = ttk.Label(root)
+video_label.pack()
+
+# Form for entering data
+name_label = ttk.Label(root, text="Enter your name:")
+name_label.pack()
+name_entry = ttk.Entry(root)
+name_entry.pack()
+
+
+record_button = ttk.Button(root, text="Record Name", command=record_name, style="TButton")  # Apply button style
+record_button.pack()
+
+success_label = ttk.Label(root, text="")
+success_label.pack()
+
+
+cap = cv2.VideoCapture(0)
+
+# Haar Cascade Classifier
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Create an exit button
+exit_button = ttk.Button(root, text="Exit", command=root.quit, style="TButton")
+exit_button.pack()
+
+
+update_video()
+
+root.mainloop()
+
+# Release the camera and close the data file when the application is closed
+cap.release()
+data_file.close()
+cv2.destroyAllWindows()
