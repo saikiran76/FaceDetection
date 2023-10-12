@@ -18,9 +18,10 @@ data_file = open("detected_faces_data.txt", "a")
 
 
 
-# To update the video and data feed
+capture_count = 0
+
 def update_video():
-    global face_count, cap, face_cascade, video_label
+    global face_count, cap, face_cascade, video_label, face_name
 
     ret, frame = cap.read()
 
@@ -30,7 +31,7 @@ def update_video():
 
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
+            
             # Adjust the cropping area to include more of the detected face
             x -= int(w * 0.1)
             y -= int(h * 0.1)
@@ -49,15 +50,40 @@ def update_video():
 
             # Cropping and saving the detected face
             detected_face = frame[y:y + h, x:x + w]
-            face_filename = os.path.join(output_dir, f"face_{face_count}.jpg")
-            cv2.imwrite(face_filename, detected_face)
+            if face_name != "":
+                face_filename = os.path.join(output_dir, f"{face_name}_{capture_count}.jpg")
+                cv2.imwrite(face_filename, detected_face)
 
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         imgtk = ImageTk.PhotoImage(image=img)
         video_label.imgtk = imgtk
         video_label.configure(image=imgtk)
 
-    root.after(10, update_video)  # Update video feed every 10ms
+    root.after(1, update_video)  # Update video feed every 10ms
+
+# Recording the data of the corresponding face
+def record_name():
+    global face_count, data_file, success_label, face_name, capture_count
+
+    # Get the name entered by the user
+    detected_name = name_entry.get()
+
+    if detected_name:
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        data_file.write(f"Name: {detected_name}, Face {face_count} detected at {timestamp}\n")
+        face_count += 1
+        face_name = detected_name
+
+        # Capture and save five images of the user
+        capture_count = 0
+        while capture_count < 5:
+            time.sleep(1)  # Delay for stability
+            capture_count += 1
+            success_label.config(text=f"Captured {capture_count} images")
+            root.update()
+            if capture_count == 5:
+                success_label.config(text="Name recorded successfully!")
+
 
 # Recording the data of the corresponding face
 def record_name():
